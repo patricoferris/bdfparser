@@ -2,8 +2,9 @@
  (modules parser))
 
 (env
-  (dev
-    (flags (:standard -w -69))))
+ (dev
+  (flags
+   (:standard -w -69))))
 
 (ocamllex lexer)
 

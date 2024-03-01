@@ -1,2 +1,1 @@
-
-val load_font: string -> Types.header list option;;
+val load_font : string -> Types.header list option

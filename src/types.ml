@@ -1,9 +1,6 @@
-type property_val = 
-  [ `Int of int
-  | `String of string
-  ]
+type property_val = [ `Int of int | `String of string ]
 
-type char_property_val = 
+type char_property_val =
   [ `Encoding of int
   | `SWidth of int * int
   | `DWidth of int * int
@@ -12,13 +9,12 @@ type char_property_val =
   | `VVector of int * int
   | `BBox of int * int * int * int
   | `Bitmap of int list
-  | `CharName of string
-  ]
+  | `CharName of string ]
 
 type header =
   [ `Version of float
   | `FontName of string
-  | `Size of int * int * int 
+  | `Size of int * int * int
   | `BoundingBox of int * int * int * int
   | `Comment of string
   | `Chars of int
@@ -26,5 +22,4 @@ type header =
   | `ContentVersion of int
   | `Properties of (string * property_val) list
   | `Char of char_property_val list
-  | `Noop
-  ]
+  | `Noop ]
