@@ -1,9 +1,9 @@
-type property_val = 
+type property_val =
   [ `Int of int
   | `String of string
   ]
 
-type char_property_val = 
+type char_property_val =
   [ `Encoding of int
   | `SWidth of int * int
   | `DWidth of int * int
@@ -18,7 +18,7 @@ type char_property_val =
   type header =
   [ `Version of float
   | `FontName of string
-  | `Size of int * int * int 
+  | `Size of int * int * int
   | `BoundingBox of int * int * int * int
   | `Comment of string
   | `Chars of int

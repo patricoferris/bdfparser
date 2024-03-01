@@ -1,19 +1,18 @@
 open OUnit2
-open Bdfparser
 
-let test_empty_parsing _ = 
+let test_empty_parsing _ =
   let lexbuf = Lexing.from_string "" in
-  let ast = Parser.prog Lexer.read lexbuf in
+  let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
   match ast with
   | None -> assert_failure "Got nothing"
   | Some l -> assert_equal l []
 
 let test_basic_parsing _ =
-  let prose = 
+  let prose =
 {|STARTFONT 2.1
 ENDFONT|} in
   let lexbuf = Lexing.from_string prose in
-  let ast = Parser.prog Lexer.read lexbuf in
+  let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
   let expected = [(`Version 2.1) ; (`Noop)] in
   match ast with
   | None -> assert_failure "Got nothing"
@@ -25,7 +24,7 @@ let test_comment _ =
 COMMENT "hello world 1"
 ENDFONT|} in
   let lexbuf = Lexing.from_string prose in
-  let ast = Parser.prog Lexer.read lexbuf in
+  let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
   let expected = [(`Version 2.1) ; (`Comment {|"hello world 1"|}) ; (`Noop)] in
   match ast with
   | None -> assert_failure "Got nothing"
@@ -37,26 +36,26 @@ let test_unquoted_comment _ =
 COMMENT hello world r
 ENDFONT|} in
   let lexbuf = Lexing.from_string prose in
-  let ast = Parser.prog Lexer.read lexbuf in
+  let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
   let expected = [(`Version 2.1) ; (`Comment "hello world r") ; (`Noop)] in
   match ast with
   | None -> assert_failure "Got nothing"
   | Some l -> assert_equal l expected
 
-let test_properties_empty _ = 
+let test_properties_empty _ =
   let prose =
 {|STARTFONT 2.1
 STARTPROPERTIES 0
 ENDPROPERTIES
 ENDFONT|} in
   let lexbuf = Lexing.from_string prose in
-  let ast = Parser.prog Lexer.read lexbuf in
+  let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
   let expected = [(`Version 2.1) ; (`Properties []) ; (`Noop)] in
   match ast with
   | None -> assert_failure "Got nothing"
   | Some l -> assert_equal l expected
 
-let test_properties _ = 
+let test_properties _ =
   let prose =
 {|STARTFONT 2.1
 STARTPROPERTIES 2
@@ -65,45 +64,45 @@ FONT_OTHER "life, the universe, and everything"
 ENDPROPERTIES
 ENDFONT|} in
   let lexbuf = Lexing.from_string prose in
-  let ast = Parser.prog Lexer.read lexbuf in
+  let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
   let expected = [
-    (`Version 2.1) ; 
-    (`Properties [ 
-      ("FONT_THING", (`Int 42)) ; 
+    (`Version 2.1) ;
+    (`Properties [
+      ("FONT_THING", (`Int 42)) ;
       ("FONT_OTHER", (`String {|"life, the universe, and everything"|}))
-    ]) ; 
+    ]) ;
     (`Noop)
   ] in
   match ast with
   | None -> assert_failure "Got nothing"
   | Some l -> assert_equal l expected
 
-let test_font_name _ = 
+let test_font_name _ =
   let prose =
 {|STARTFONT 2.1
 FONT -gnu-unifont-medium-r-normal--16-160-75-75-c-80-iso10646-1
 ENDFONT|} in
   let lexbuf = Lexing.from_string prose in
-  let ast = Parser.prog Lexer.read lexbuf in
+  let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
   let expected = [
-    (`Version 2.1) ; 
-    (`FontName "-gnu-unifont-medium-r-normal--16-160-75-75-c-80-iso10646-1") ; 
+    (`Version 2.1) ;
+    (`FontName "-gnu-unifont-medium-r-normal--16-160-75-75-c-80-iso10646-1") ;
     (`Noop)
   ] in
   match ast with
   | None -> assert_failure "Got nothing"
   | Some l -> assert_equal l expected
 
-let test_font_size _ = 
+let test_font_size _ =
   let prose =
 {|STARTFONT 2.1
 SIZE 1 2 3
 ENDFONT|} in
   let lexbuf = Lexing.from_string prose in
-  let ast = Parser.prog Lexer.read lexbuf in
+  let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
   let expected = [
-    (`Version 2.1) ; 
-    (`Size (1, 2, 3)) ; 
+    (`Version 2.1) ;
+    (`Size (1, 2, 3)) ;
     (`Noop)
   ] in
   match ast with
@@ -116,7 +115,7 @@ let test_bounding_box _ =
 FONTBOUNDINGBOX 1 2 3 4
 ENDFONT|} in
     let lexbuf = Lexing.from_string prose in
-    let ast = Parser.prog Lexer.read lexbuf in
+    let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
     let expected = [
       (`Version 2.1) ;
       (`BoundingBox (1, 2, 3, 4)) ;
@@ -132,7 +131,7 @@ let test_content_version _ =
 CONTENTVERSION 42
 ENDFONT|} in
     let lexbuf = Lexing.from_string prose in
-    let ast = Parser.prog Lexer.read lexbuf in
+    let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
     let expected = [
       (`Version 2.1) ;
       (`ContentVersion 42) ;
@@ -148,7 +147,7 @@ let test_metric_set _ =
 METRICSET 1
 ENDFONT|} in
     let lexbuf = Lexing.from_string prose in
-    let ast = Parser.prog Lexer.read lexbuf in
+    let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
     let expected = [
       (`Version 2.1) ;
       (`MetricSet 1) ;
@@ -164,7 +163,7 @@ let test_no_chars _ =
 CHARS 0
 ENDFONT|} in
     let lexbuf = Lexing.from_string prose in
-    let ast = Parser.prog Lexer.read lexbuf in
+    let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
     let expected = [
       (`Version 2.1) ;
       (`Chars 0) ;
@@ -182,7 +181,7 @@ STARTCHAR char0000
 ENDCHAR
 ENDFONT|} in
     let lexbuf = Lexing.from_string prose in
-    let ast = Parser.prog Lexer.read lexbuf in
+    let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
     let expected = [
       (`Version 2.1) ;
       (`Chars 1) ;
@@ -204,7 +203,7 @@ ENCODING 42
 ENDCHAR
 ENDFONT|} in
     let lexbuf = Lexing.from_string prose in
-    let ast = Parser.prog Lexer.read lexbuf in
+    let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
     let expected = [
       (`Version 2.1) ;
       (`Chars 1) ;
@@ -227,7 +226,7 @@ BBX 1 2 3 4
 ENDCHAR
 ENDFONT|} in
     let lexbuf = Lexing.from_string prose in
-    let ast = Parser.prog Lexer.read lexbuf in
+    let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
     let expected = [
       (`Version 2.1) ;
       (`Chars 1) ;
@@ -251,7 +250,7 @@ DWIDTH 3 4
 ENDCHAR
 ENDFONT|} in
     let lexbuf = Lexing.from_string prose in
-    let ast = Parser.prog Lexer.read lexbuf in
+    let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
     let expected = [
       (`Version 2.1) ;
       (`Chars 1) ;
@@ -275,7 +274,7 @@ VVECTOR 1 2
 ENDCHAR
 ENDFONT|} in
     let lexbuf = Lexing.from_string prose in
-    let ast = Parser.prog Lexer.read lexbuf in
+    let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
     let expected = [
       (`Version 2.1) ;
       (`Chars 1) ;
@@ -301,7 +300,7 @@ BITMAP
 ENDCHAR
 ENDFONT|} in
     let lexbuf = Lexing.from_string prose in
-    let ast = Parser.prog Lexer.read lexbuf in
+    let ast = Bdf.Parser.prog Bdf.Lexer.read lexbuf in
     let expected = [
       (`Version 2.1) ;
       (`Chars 1) ;

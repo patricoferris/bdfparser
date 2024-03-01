@@ -1,5 +1,5 @@
-
-type glyph = {
+module Glyph = struct
+type t = {
   name : string;
   encoding : int;
   swidth : int * int;
@@ -11,7 +11,7 @@ type glyph = {
   bitmap : bytes;
 }
 
-let default_glyph = {
+let default = {
   name = "" ;
   encoding = 0 ;
   swidth = (0, 0) ;
@@ -23,6 +23,25 @@ let default_glyph = {
   bitmap = Bytes.empty ;
 }
 
+let name (g : t) : string =
+  g.name
+
+let bbox (g : t) : (int * int * int * int) =
+  g.bounding_box
+
+let dwidth (g : t) : (int * int) =
+  g.dwidth
+
+let dimensions (g : t) : (int * int * int * int) =
+  (* This is totes wrong, but enough to bootstrap with I think for basic western chars *)
+  let x, _ = g.dwidth in
+  let _, y, ox, oy = g.bounding_box in
+  (x, y, ox, oy)
+
+let bitmap (g : t) : bytes =
+  g.bitmap
+end
+
 type t = {
   version : float ;
   name : string ;
@@ -30,10 +49,22 @@ type t = {
   bounding_box : int * int * int * int ;
   content_version : int ;
   metric_set : int ;
-  properties : (string * Innertypes.property_val) list;
-  glyphs : glyph array;
+  properties : (string * Types.property_val) list;
+  glyphs : Glyph.t array;
   map: (Uchar.t * int) list;
 }
+
+let glyph_count t =
+  Array.length t.glyphs
+
+let glyph_of_char (font : t) (u : Uchar.t) : Glyph.t option =
+  match (List.assoc_opt u font.map) with
+  | None -> None
+  | Some index -> (
+    match ((index >= 0) && (index < Array.length font.glyphs)) with
+    | false -> None
+    | true -> Some font.glyphs.(index)
+  )
 
 let default_t = {
   version = 0. ;
@@ -47,8 +78,8 @@ let default_t = {
   map = [] ;
 }
 
-let innerchar_to_glyph (ic : Innertypes.char_property_val list) : glyph =
-  List.fold_left (fun (acc : glyph) (item : Innertypes.char_property_val) : glyph ->
+let innerchar_to_glyph (ic : Types.char_property_val list) : Glyph.t =
+  List.fold_left (fun (acc : Glyph.t ) (item : Types.char_property_val) : Glyph.t  ->
     match item with
     | `CharName n -> { acc with name=n }
     | `Encoding e -> { acc with encoding=e }
@@ -75,7 +106,7 @@ let innerchar_to_glyph (ic : Innertypes.char_property_val list) : glyph =
       ) d;
       { acc with bitmap = bitmap }
     )
-  ) default_glyph ic
+  ) Glyph.default ic
 
 
 let create (filename : string) : (t, string) result =
@@ -87,7 +118,7 @@ let create (filename : string) : (t, string) result =
   | None -> (Error "No file")
   | Some ast -> (
     Ok (
-      let fnt = List.fold_left (fun (acc : t) (item : Innertypes.header) : t ->
+      let fnt = List.fold_left (fun (acc : t) (item : Types.header) : t ->
         match item with
         | `Version v -> { acc with version=v }
         | `Size s -> { acc with size=s }
@@ -106,7 +137,7 @@ let create (filename : string) : (t, string) result =
         ) default_t ast
       in
       (* having built it, now work out the lookup map *)
-      let map = Array.mapi (fun i g -> (Uchar.of_int g.encoding, i)) fnt.glyphs in
+      let map = Array.mapi (fun i g -> (Uchar.of_int g.Glyph.encoding, i)) fnt.glyphs in
       { fnt with map=(Array.to_list map) }
     )
   )
@@ -120,32 +151,5 @@ let bdf_version t =
 let version t =
   t.content_version
 
-let glyph_count t =
-  Array.length t.glyphs
-
-let glyph_of_char (font : t) (u : Uchar.t) : glyph option =
-  match (List.assoc_opt u font.map) with
-  | None -> None
-  | Some index -> (
-    match ((index >= 0) && (index < Array.length font.glyphs)) with
-    | false -> None
-    | true -> Some font.glyphs.(index)
-  )
-
-let glyph_name (g : glyph) : string =
-  g.name
-
-let glyph_bbox (g : glyph) : (int * int * int * int) =
-  g.bounding_box
-
-let glyph_dwidth (g : glyph) : (int * int) =
-  g.dwidth
-
-let glyph_dimensions (g : glyph) : (int * int * int * int) =
-  (* This is totes wrong, but enough to bootstrap with I think for basic western chars *)
-  let x, _ = g.dwidth in
-  let _, y, ox, oy = g.bounding_box in
-  (x, y, ox, oy)
-
-let glyph_bitmap (g : glyph) : bytes =
-  g.bitmap
+module Parser = Parser
+module Lexer = Lexer

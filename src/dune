@@ -9,4 +9,4 @@
 
 (library
  (public_name bdfparser)
- (name bdfparser))
+ (name bdf))
